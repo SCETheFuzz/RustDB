@@ -1,7 +1,6 @@
 from functools import wraps
-from flask import Flask, request, Response, render_template, json, g, jsonify
+from flask import Flask, request, Response, render_template, g, jsonify
 import requests
-import time
 import sqlite3
 import config
 
@@ -23,6 +22,7 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
+
 
 # Basic HTTP Authentication
 # -------------------------
@@ -50,13 +50,15 @@ def requires_auth(f):
         if not auth or not check_auth(auth.username, auth.password):
             return authenticate()
         return f(*args, **kwargs)
+
     return decorated
+
 
 # Application Routes
 # ------------------
 
 
-@app.route('/playerlist')
+@app.route('/')
 @requires_auth
 def playerlist():
     con = sqlite3.connect(DATABASE)
@@ -66,6 +68,7 @@ def playerlist():
     dbdata = cur.fetchall()
     data = dict(dbdata)
     return render_template('playerlist.html', data=data)
+
 
 # API Endpoints
 # -------------
@@ -97,46 +100,6 @@ def get_friends(steam_id):
     except KeyError:
         return jsonify({"message": "Sorry! I think this user's profile is actually private."})
 
-
-@app.route('/query')
-def run_query():
-    con = sqlite3.connect(DATABASE)
-    con.row_factory = lambda cursor, row: row[0]
-    cur = con.cursor()
-    cur.execute("SELECT * FROM Player WHERE banid > 0")
-    banlist = cur.fetchall()
-    cur.execute("SELECT steamid FROM Player WHERE connectedTime > 0")
-    playerlist = cur.fetchall()
-    banned_friends = {}
-    counter = 0
-    for steamid in playerlist:
-        counter += 1
-        print "Currently working on player {} out of {}".format(counter, len(playerlist))
-        bad_friends = []
-        rv = requests.get("http://api.steampowered.com/ISteamUser/GetFriendList/v0001/"
-                          "?key={}"
-                          "&steamid={}"
-                          "&relationship=friend".format(API_KEY, steamid))
-        time.sleep(1)
-        friends_list = rv.json()
-        try:
-            for friend in friends_list['friendslist']['friends']:
-                if friend['steamid'] in banlist:
-                    bad_friends.append(friend['steamid'])
-            if len(bad_friends) > 0:
-                print "Found someone with a banned friend."
-                banned_friends[steamid] = bad_friends
-        except KeyError:
-            print "Queried {} but profile was set to private. RA lied to me.".format(steamid)
-            pass
-
-    return json.dumps(banned_friends)
-
-
-@app.route('/')
-@requires_auth
-def secret_page():
-    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
