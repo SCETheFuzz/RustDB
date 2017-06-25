@@ -5,31 +5,27 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Super cool shit</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
-<nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <a class="navbar-brand" href="#">Rustopia US</a>
-        </div>
-        <!--
-      <div id="navbar" class="navbar-collapse collapse">
-        <ul class="nav navbar-nav navbar-right">
-          <li><a href="#">Dashboard</a></li>
-          <li><a href="#">Settings</a></li>
-          <li><a href="#">Profile</a></li>
-          <li><a href="#">Help</a></li>
-        </ul>
-      </div>
-      -->
-    </div>
-</nav>
+<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+  <a class="navbar-brand" href="#">Rustopia US</a>
 
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item active">
+        <a class="nav-link" href="#">Playerlist<span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link disabled" href="#">Tools</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+<br>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
+        <div class="col-2">
             <label for="queryPlayer">Filter by name</label>
             <input type="search" class="form-control" id="queryPlayer" onkeyup="filterName()" placeholder="Player name"
                    title="Type in a name">
@@ -43,26 +39,33 @@
             <label class="checkbox-inline"><input type="checkbox" value="">Gameban</label>
             <label class="checkbox-inline"><input type="checkbox" value="">VAC Ban</label>
         </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-            <h2 class="page-header">Player List</h2>
+        <div class="col-9 main">
             <div class="table-responsive">
                 <table id="playerTable" class="table table-striped">
                     <thead>
                     <tr>
                         <th>Name</th>
                         <th>SteamID</th>
-                        <th></th>
+                        <th>Friends</th>
                         <th>Tools</th>
 
                     </tr>
                     </thead>
                     <tbody>
                     {% for name, steamid in data.iteritems() %}
-                        <tr>
-                            <td>{{ name }}</td>
-                            <td><a href="https://steamcommunity.com/profiles/{{ steamid }}"
-                                   target="_blank">{{ steamid }}</a></td>
-                            <td><a id="gf_{{ steamid }}" href="#" onclick="getFriends({{ steamid }})">Check friends</a>
+                        <tr id="{{ steamid }}">
+                            <td>
+                                {{ name }}
+                            </td>
+                            <td>
+                                <a href="https://steamcommunity.com/profiles/{{ steamid }}"
+                                   target="_blank">{{ steamid }}</a>
+                            </td>
+                            <td class="friends">
+
+                            </td>
+                            <td>
+                                <a href="#" onclick="getFriends('{{ steamid }}')">Check friends</a>
                             </td>
                         </tr>
                     {% endfor %}
@@ -72,8 +75,9 @@
         </div>
     </div>
 </div>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<script type="application/javascript" src="{{ url_for('static', filename='filters.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tether.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script type="application/javascript" src="{{ url_for('static', filename='js/filters.js') }}"></script>
 </body>
 </html>

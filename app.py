@@ -96,9 +96,12 @@ def get_friends(steam_id):
             rv = cur.fetchone()
             if rv:
                 bad_friends.append(rv)
-        return jsonify(dict(bad_friends))
+        if len(bad_friends) > 0:
+            return jsonify(dict(bad_friends))
+        else:
+            return jsonify({"message": "nothing"})
     except KeyError:
-        return jsonify({"message": "Sorry! I think this user's profile is actually private."})
+        return jsonify({"message": "private"})
 
 
 if __name__ == '__main__':

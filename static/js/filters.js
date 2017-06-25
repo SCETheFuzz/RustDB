@@ -37,14 +37,39 @@ function filterSteamID() {
     }
 }
 
+$('a[href="#"]').click(function(event) {
+  event.preventDefault();
+});
+
+// TODO figure out why empty responses won't update to "Unavailable"
 function getFriends(steam_id) {
-    $.getJSON("/getFriends/" + steam_id, function (response) {
-        $.each(response, function (steamid, friends) {
-            var row = "<tr>";
-            row += "<td>" + steamid + "</td>";
-            row += "<td>" + friends.join('<br>') + "</td>";
-            row += "</tr>";
-            $("table").append(row);
-        });
+    steam_id = String(steam_id);
+    var element = $("#" + steam_id + " > .friends");
+
+    $.getJSON("/getFriends/" + String(steam_id), function (response) {
+        var banned = 0;
+        var clean = 0;
+
+        if (response.message === "nothing") {
+            element.html("No friends on US");
+        } else if (response.message == "private") {
+            element.html("Private profile");
+        } else {
+            $.each(response, function (banid, steamid) {
+                if (banid > 0) {
+                    banned++;
+                } else if (banid < 0) {
+                    clean++;
+                }
+            });
+
+            if (banned > 0){
+                $("#" + steam_id).className.append("table-danger");
+                element.html("banned <span class=\"badge badge-danger\">" + banned);
+            } else if (clean > 0) {
+                element.html("All safe!");
+            }
+        }
     });
+    return false;
 }
