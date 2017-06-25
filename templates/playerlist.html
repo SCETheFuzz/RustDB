@@ -8,36 +8,69 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
-<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-  <a class="navbar-brand" href="#">Rustopia US</a>
+<style>
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url({{ url_for('static', filename='img/loading-2.gif') }}) 50% 50% no-repeat rgb(255, 255, 255);
+    }
+</style>
+<div class="loader"></div>
 
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="#">Playerlist<span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link disabled" href="#">Tools</a>
-      </li>
-    </ul>
-  </div>
+
+<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+    <a class="navbar-brand" href="#">Rustopia US</a>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">PlayerDB<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Friend Lookup</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">VPN Checker</a>
+            </li>
+        </ul>
+    </div>
 </nav>
 <br>
 <div class="container-fluid">
     <div class="row">
         <div class="col-2">
+            <h4>Search Filters:</h4>
+            <hr>
             <label for="queryPlayer">Filter by name</label>
-            <input type="search" class="form-control" id="queryPlayer" onkeyup="filterName()" placeholder="Player name"
+            <input type="search" class="form-control" id="queryPlayer" placeholder="Player name"
                    title="Type in a name">
             <br>
             <label for="querySteamID">Filter by SteamID</label>
-            <input type="search" class="form-control" id="querySteamID" onkeyup="filterSteamID()"
+            <input type="search" class="form-control" id="querySteamID"
                    placeholder="Player SteamID" title="Type in a SteamID">
             <br>
             <label>Display players with these bans:</label>
             <label class="checkbox-inline"><input type="checkbox" value="">RustDB</label>
             <label class="checkbox-inline"><input type="checkbox" value="">Gameban</label>
             <label class="checkbox-inline"><input type="checkbox" value="">VAC Ban</label>
+            <br>
+            <br>
+            <div id="#alerts">
+                <h4>Notifications:</h4>
+                <hr>
+                <!-- ALERTS -->
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                  <strong>Welcome!</strong> Upon certain events we will notify you here with extra information.
+                </div>
+            </div>
+
         </div>
         <div class="col-9 main">
             <div class="table-responsive">
@@ -46,6 +79,7 @@
                     <tr>
                         <th>Name</th>
                         <th>SteamID</th>
+                        <th>IPv4</th>
                         <th>Friends</th>
                         <th>Tools</th>
 
@@ -60,12 +94,19 @@
                             <td>
                                 <a href="https://steamcommunity.com/profiles/{{ steamid }}"
                                    target="_blank">{{ steamid }}</a>
-                            </td>
-                            <td class="friends">
-
+                                &nbsp;
+                                <button onclick="copySteamID('{{ steamid }}')" type="button" class="btn btn-info btn-sm" aria-label="Left Align">
+                                  cpy
+                                </button>
                             </td>
                             <td>
-                                <a href="#" onclick="getFriends('{{ steamid }}')">Check friends</a>
+                                0.0.0.0
+                            </td>
+                            <td class="friends">
+                                *
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-default" onclick="getFriends('{{ steamid }}', this)">Friends</button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -78,6 +119,13 @@
 <script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/tether.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script type="application/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script type="application/javascript" src="{{ url_for('static', filename='js/filters.js') }}"></script>
+<script type="text/javascript">
+    $(window).on('load', function () {
+        setTimeout('', 2000);
+        $('.loader').fadeOut("slow");
+    });
+</script>
 </body>
 </html>

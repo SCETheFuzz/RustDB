@@ -5,6 +5,7 @@
 var table = document.getElementById("playerTable");
 var tr = table.getElementsByTagName("tr");
 
+// filter data by Name
 function filterName() {
     var input, filter, td, i;
     input = document.getElementById("queryPlayer");
@@ -21,6 +22,7 @@ function filterName() {
     }
 }
 
+// filter data by SteamID
 function filterSteamID() {
     var input, filter, td, i;
     input = document.getElementById("querySteamID");
@@ -37,39 +39,75 @@ function filterSteamID() {
     }
 }
 
-$('a[href="#"]').click(function(event) {
-  event.preventDefault();
-});
+function repopulateTable(data) {
+    table.innerHTML = "";
+    var content = "<thead><tr><th>Name</th><th>SteamID</th><th>IPv4</th><th>Friends</th><th>Tools</th></tr></thead><tbody>";
 
-// TODO figure out why empty responses won't update to "Unavailable"
-function getFriends(steam_id) {
-    steam_id = String(steam_id);
-    var element = $("#" + steam_id + " > .friends");
-
-    $.getJSON("/getFriends/" + String(steam_id), function (response) {
-        var banned = 0;
-        var clean = 0;
-
-        if (response.message === "nothing") {
-            element.html("No friends on US");
-        } else if (response.message == "private") {
-            element.html("Private profile");
-        } else {
-            $.each(response, function (banid, steamid) {
-                if (banid > 0) {
-                    banned++;
-                } else if (banid < 0) {
-                    clean++;
-                }
-            });
-
-            if (banned > 0){
-                $("#" + steam_id).className.append("table-danger");
-                element.html("banned <span class=\"badge badge-danger\">" + banned);
-            } else if (clean > 0) {
-                element.html("All safe!");
-            }
-        }
-    });
+    $.each(data, function (name, steamid) {
+        content += "<tr id=\""+steamid+"\"><td>"+name+"</td><td>" +
+            "<a href=\"https://steamcommunity.com/profiles/{{ steamid }}\" target=\"_blank\">"+steamid+"</a>" +
+            "&nbsp;<button onclick=\"copySteamID('{{ steamid }}')\" type=\"button\" class=\"btn btn-info btn-sm\" " +
+            "aria-label=\"Left Align\">cpy</button></td><td>0.0.0.0</td><td class=\"friends\">*</td><td>" +
+            "<button class=\"btn btn-sm btn-default\" onclick=\"getFriends('"+steamid+"', this)\">Friends</button>" +
+            "</td></tr>";
+    })
+    content += "</tbody>";
+    table.innerHTML = content;
     return false;
 }
+
+// AJAX request to load the playerlist
+function queryName() {
+    var filter = $playerNameInput.val();
+    if (filter !== ''){
+        $.getJSON("/getPlayersByName/"+filter, function (response) {
+            repopulateTable(response);
+        });
+    } else {
+        $.getJSON("/getPlayers", function (response) {
+            repopulateTable(response);
+        });
+    }
+    return false;
+}
+
+function querySteamID() {
+    var filter = $steamIDInput.val();
+    if (filter !== ''){
+        $.getJSON("/getPlayersBySteamID/"+filter, function (response) {
+            repopulateTable(response);
+        });
+    } else {
+        $.getJSON("/getPlayers", function (response) {
+            repopulateTable(response);
+        });
+    }
+    return false;
+}
+
+var typingTimer;
+var doneTypingInterval = 800;
+var $playerNameInput = $('#queryPlayer');
+var $steamIDInput = $('#querySteamID');
+
+//on keyup, start the countdown
+$playerNameInput.on('keyup', function () {
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(queryName, doneTypingInterval);
+});
+
+//on keydown, clear the countdown
+$playerNameInput.on('keydown', function () {
+  clearTimeout(typingTimer);
+});
+
+//on keyup, start the countdown
+$steamIDInput.on('keyup', function () {
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(querySteamID, doneTypingInterval);
+});
+
+//on keydown, clear the countdown
+$steamIDInput.on('keydown', function () {
+  clearTimeout(typingTimer);
+});

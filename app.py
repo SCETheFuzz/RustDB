@@ -64,7 +64,7 @@ def playerlist():
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid FROM Player")
+    cur.execute("SELECT name,steamid FROM Player LIMIT 100")
     dbdata = cur.fetchall()
     data = dict(dbdata)
     return render_template('playerlist.html', data=data)
@@ -72,6 +72,39 @@ def playerlist():
 
 # API Endpoints
 # -------------
+
+
+@app.route('/getPlayers')
+def get_players():
+    con = sqlite3.connect(DATABASE)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    cur.execute("SELECT name,steamid FROM Player LIMIT 100")
+    dbdata = cur.fetchall()
+    data = dict(dbdata)
+    return jsonify(data)
+
+
+@app.route('/getPlayersByName/<string:query_filter>')
+def get_players_by_name(query_filter):
+    con = sqlite3.connect(DATABASE)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    cur.execute("SELECT name,steamid FROM Player WHERE name LIKE '%"+query_filter+"%'")
+    dbdata = cur.fetchall()
+    data = dict(dbdata)
+    return jsonify(data)
+
+
+@app.route('/getPlayersBySteamID/<string:query_filter>')
+def get_players_by_steamid(query_filter):
+    con = sqlite3.connect(DATABASE)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    cur.execute("SELECT name,steamid FROM Player WHERE steamid LIKE '%"+query_filter+"%'")
+    dbdata = cur.fetchall()
+    data = dict(dbdata)
+    return jsonify(data)
 
 
 @app.route('/getFriends/<int:steam_id>')
