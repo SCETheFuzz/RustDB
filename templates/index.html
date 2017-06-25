@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <title>Super cool shit</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- jQuery (necessary for Bootstrap"s JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn"t work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+      <nav class="navbar navbar-inverse">
+          <div class="container">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="javascript:FuckYou();">Find the bad friends</a>
+            </div>
+          </div>
+        </nav>
+
+        <div class="container">
+
+          <div class="starter-template">
+            <h1>Warning, this is slow as fuck</h1>
+            <p>Blame Steam's web API for throttling our requests per second like a mofo.</p>
+              <br>
+            <table class="table table-bordered">
+                <tr>
+                    <th>Player</th>
+                    <th>Banned Friends</th>
+                </tr>
+            </table>
+          </div>
+
+        </div><!-- /.container -->
+
+
+
+    <script>
+        function FuckYou() {
+            alert("Fuck you");
+        }
+
+        $.getJSON( "/query", function( data ) {
+            $.each(data, function(steamid, friends) {
+               var row="<tr>";
+               row+="<td>"+steamid+"</td>";
+               row+="<td>"+friends.join('<br>')+"</td>";
+               row+="</tr>";
+               $("table").append(row);
+            });
+        });
+    </script>
+  </body>
+</html>
