@@ -3,12 +3,12 @@ from flask import Flask, request, Response, render_template, json, g, jsonify
 import requests
 import time
 import sqlite3
+import config
 
 app = Flask(__name__)
-
-DATABASE = ""
-API_KEY = ""
-UI_PASSWORD = ""
+DATABASE = config.DATABASE
+API_KEY = config.API_KEY
+UI_PASSWORD = config.UI_PASSWORD
 
 
 def get_db():
