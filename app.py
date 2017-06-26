@@ -5,9 +5,10 @@ import sqlite3
 import config
 
 app = Flask(__name__)
-DATABASE = config.DATABASE
-API_KEY = config.API_KEY
-UI_PASSWORD = config.UI_PASSWORD
+DATABASE = config.DATABASE  # path to players_servername.db
+API_KEY = config.API_KEY  # API key for Steam's web API
+UI_PASSWORD = config.UI_PASSWORD  # set a password for your web interface
+CONTACT_EMAIL = config.CONTACT_EMAIL  # contact email used for getipintel.net requests
 
 
 def get_db():
@@ -64,10 +65,9 @@ def playerlist():
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid FROM Player LIMIT 100")
+    cur.execute("SELECT name,steamid,ip FROM Player LIMIT 100")
     dbdata = cur.fetchall()
-    data = dict(dbdata)
-    return render_template('playerlist.html', data=data)
+    return render_template('playerlist.html', data=dbdata)
 
 
 # API Endpoints
@@ -79,10 +79,18 @@ def get_players():
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid FROM Player LIMIT 100")
-    dbdata = cur.fetchall()
-    data = dict(dbdata)
-    return jsonify(data)
+    cur.execute("SELECT name,steamid,ip FROM Player LIMIT 100")
+    dbdata = [list(entry) for entry in cur.fetchall()]
+    return jsonify(dbdata)
+
+
+@app.route('/getIpIntel/<string:ip_addr>')
+def get_ip_intel(ip_addr):
+    rv = requests.get("http://check.getipintel.net/check.php"
+                      "?ip={}"
+                      "&contact={}".format(ip_addr, CONTACT_EMAIL))
+    score = rv.json()
+    return jsonify(score)
 
 
 @app.route('/getPlayersByName/<string:query_filter>')
@@ -90,10 +98,19 @@ def get_players_by_name(query_filter):
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid FROM Player WHERE name LIKE '%"+query_filter+"%'")
-    dbdata = cur.fetchall()
-    data = dict(dbdata)
-    return jsonify(data)
+    cur.execute("SELECT name,steamid,ip FROM Player WHERE name LIKE '%" + query_filter + "%'")
+    dbdata = [list(entry) for entry in cur.fetchall()]
+    return jsonify(dbdata)
+
+
+@app.route('/getPlayersByIP/<string:query_filter>')
+def get_players_by_ip(query_filter):
+    con = sqlite3.connect(DATABASE)
+    con.row_factory = sqlite3.Row
+    cur = con.cursor()
+    cur.execute("SELECT name,steamid,ip FROM Player WHERE ip LIKE '%" + query_filter + "%'")
+    dbdata = [list(entry) for entry in cur.fetchall()]
+    return jsonify(dbdata)
 
 
 @app.route('/getPlayersBySteamID/<string:query_filter>')
@@ -101,10 +118,9 @@ def get_players_by_steamid(query_filter):
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid FROM Player WHERE steamid LIKE '%"+query_filter+"%'")
-    dbdata = cur.fetchall()
-    data = dict(dbdata)
-    return jsonify(data)
+    cur.execute("SELECT name,steamid,ip FROM Player WHERE steamid LIKE '%" + query_filter + "%'")
+    dbdata = [list(entry) for entry in cur.fetchall()]
+    return jsonify(dbdata)
 
 
 @app.route('/getFriends/<int:steam_id>')
@@ -138,4 +154,4 @@ def get_friends(steam_id):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(host="0.0.0.0", debug=True)

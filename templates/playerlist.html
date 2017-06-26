@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Super cool shit</title>
+    <title>Rust Admin Extension</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
@@ -23,7 +23,7 @@
 
 
 <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-    <a class="navbar-brand" href="#">Rustopia US</a>
+    <a class="navbar-brand" href="#">Server Name</a>
 
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
@@ -46,17 +46,21 @@
             <h4>Search Filters:</h4>
             <hr>
             <label for="queryPlayer">Filter by name</label>
-            <input type="search" class="form-control" id="queryPlayer" placeholder="Player name"
+            <input type="search" class="form-control" id="queryPlayer" placeholder="YoMama123"
                    title="Type in a name">
             <br>
             <label for="querySteamID">Filter by SteamID</label>
             <input type="search" class="form-control" id="querySteamID"
-                   placeholder="Player SteamID" title="Type in a SteamID">
+                   placeholder="76561198071195515" title="Type in a SteamID">
+            <br>
+            <label for="queryIP">Filter by IP</label>
+            <input type="search" class="form-control" id="queryIP"
+                   placeholder="192.168.0.1" title="Type in an IP">
             <br>
             <label>Display players with these bans:</label>
-            <label class="checkbox-inline"><input type="checkbox" value="">RustDB</label>
-            <label class="checkbox-inline"><input type="checkbox" value="">Gameban</label>
-            <label class="checkbox-inline"><input type="checkbox" value="">VAC Ban</label>
+            <label class="checkbox-inline"><input type="checkbox" disabled value="">RustDB</label>
+            <label class="checkbox-inline"><input type="checkbox" disabled value="">Gameban</label>
+            <label class="checkbox-inline"><input type="checkbox" disabled value="">VAC Ban</label>
             <br>
             <br>
             <div id="#alerts">
@@ -64,10 +68,10 @@
                 <hr>
                 <!-- ALERTS -->
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
-                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                  <strong>Welcome!</strong> Upon certain events we will notify you here with extra information.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <strong>Welcome!</strong> Upon certain events we will notify you here with extra information.
                 </div>
             </div>
 
@@ -80,13 +84,14 @@
                         <th>Name</th>
                         <th>SteamID</th>
                         <th>IPv4</th>
+                        <th>IP Intel</th>
                         <th>Friends</th>
                         <th>Tools</th>
 
                     </tr>
                     </thead>
                     <tbody>
-                    {% for name, steamid in data.iteritems() %}
+                    {% for name, steamid, ip in data %}
                         <tr id="{{ steamid }}">
                             <td>
                                 {{ name }}
@@ -95,18 +100,27 @@
                                 <a href="https://steamcommunity.com/profiles/{{ steamid }}"
                                    target="_blank">{{ steamid }}</a>
                                 &nbsp;
-                                <button onclick="copySteamID('{{ steamid }}')" type="button" class="btn btn-info btn-sm" aria-label="Left Align">
-                                  cpy
+                                <button onclick="copySteamID('{{ steamid }}')" type="button" class="btn btn-info btn-sm"
+                                        aria-label="Left Align">
+                                    cpy
                                 </button>
                             </td>
-                            <td>
-                                0.0.0.0
+                            <td class="ip">
+                                {{ ip }}
+                            </td>
+                            <td class="intel">
+                                *
                             </td>
                             <td class="friends">
                                 *
                             </td>
                             <td>
-                                <button class="btn btn-sm btn-default" onclick="getFriends('{{ steamid }}', this)">Friends</button>
+                                <button class="btn btn-sm btn-default"
+                                        onclick="getIpIntel('{{ ip }}', '{{ steamid }}', this)">IP Intel
+                                </button>
+                                <button class="btn btn-sm btn-default" onclick="getFriends('{{ steamid }}', this)">
+                                    Friends
+                                </button>
                             </td>
                         </tr>
                     {% endfor %}

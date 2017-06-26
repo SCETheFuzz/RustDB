@@ -13,22 +13,31 @@ function getPlayers() {
 }
 
 function copySteamID(steam_id) {
-  var $temp = $("<input>");
-  $("body").append($temp);
-  $temp.val(steam_id).select();
-  document.execCommand("copy");
-  $temp.remove();
+    var $temp = $("<input>");
+    $("body").append($temp);
+    $temp.val(steam_id).select();
+    document.execCommand("copy");
+    $temp.remove();
 }
 
 // when an alert is closed, remove it from the DOM
 $('.alert').on('closed.bs.alert', function () {
-  // TODO: remove the alert
+    // TODO: remove the alert
 });
 
 // prevent page reload on # link clicks
-$('a[href="#"]').click(function(event) {
-  event.preventDefault();
+$('a[href="#"]').click(function (event) {
+    event.preventDefault();
 });
+
+function getIpIntel(ip, steam_id, btn) {
+    $.getJSON("/getIpIntel/" + ip, function (response) {
+        var intel = $("#" + steam_id + " > .intel");
+        intel.html(response.toFixed(2));
+    });
+    $(btn).addClass('disabled');
+    return false;
+}
 
 // AJAX request to run a check on players friends list
 function getFriends(steam_id, btn) {
@@ -52,8 +61,8 @@ function getFriends(steam_id, btn) {
                 }
             });
 
-            if (banned > 0){
-                $("#" + steam_id).className.append("table-danger");
+            if (banned > 0) {
+                $("#" + steam_id).addClass("table-danger");
                 element.html("banned <span class=\"badge badge-danger\">" + banned);
             } else if (clean > 0) {
                 element.html("All safe!");
