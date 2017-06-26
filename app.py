@@ -98,7 +98,7 @@ def get_players_by_name(query_filter):
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player WHERE name LIKE '%" + query_filter + "%'")
+    cur.execute("SELECT name,steamid,ip FROM Player WHERE name LIKE '%" + query_filter + "%' LIMIT 100")
     dbdata = [list(entry) for entry in cur.fetchall()]
     return jsonify(dbdata)
 
@@ -108,7 +108,7 @@ def get_players_by_ip(query_filter):
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player WHERE ip LIKE '%" + query_filter + "%'")
+    cur.execute("SELECT name,steamid,ip FROM Player WHERE ip LIKE '%" + query_filter + "%' LIMIT 100")
     dbdata = [list(entry) for entry in cur.fetchall()]
     return jsonify(dbdata)
 
@@ -118,7 +118,7 @@ def get_players_by_steamid(query_filter):
     con = sqlite3.connect(DATABASE)
     con.row_factory = sqlite3.Row
     cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player WHERE steamid LIKE '%" + query_filter + "%'")
+    cur.execute("SELECT name,steamid,ip FROM Player WHERE steamid LIKE '%" + query_filter + "%' LIMIT 100")
     dbdata = [list(entry) for entry in cur.fetchall()]
     return jsonify(dbdata)
 
@@ -141,7 +141,7 @@ def get_friends(steam_id):
     bad_friends = []
     try:
         for friend in friends['friendslist']['friends']:
-            cur.execute("SELECT banid,steamid FROM Player WHERE steamid == {}".format(friend['steamid']))
+            cur.execute("SELECT banid,steamid FROM Player WHERE steamid == {} LIMIT 100".format(friend['steamid']))
             rv = cur.fetchone()
             if rv:
                 bad_friends.append(rv)
@@ -154,4 +154,4 @@ def get_friends(steam_id):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0", port=80, debug=True)

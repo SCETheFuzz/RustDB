@@ -117,7 +117,7 @@ function queryIP() {
 }
 
 var typingTimer;
-var doneTypingInterval = 800;
+var doneTypingInterval = 200;
 var $playerNameInput = $('#queryPlayer');
 var $steamIDInput = $('#querySteamID');
 var $steamIPInput = $('#queryIP');
