@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rust Admin Extension</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+    <a class="navbar-brand" href="#">Server Name</a>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">PlayerDB<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Banlist</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Friend Lookup</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">IP Tools</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<br>
+<div class="container-fluid">
+    {% block content %}{% endblock %}
+<script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tether.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script type="application/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

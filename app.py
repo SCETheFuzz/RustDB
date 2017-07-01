@@ -2,19 +2,18 @@ from functools import wraps
 from flask import Flask, request, Response, render_template, g, jsonify
 import requests
 import sqlite3
-import config
+from flask_pymongo import PyMongo
+from bson.json_util import dumps
 
 app = Flask(__name__)
-DATABASE = config.DATABASE  # path to players_servername.db
-API_KEY = config.API_KEY  # API key for Steam's web API
-UI_PASSWORD = config.UI_PASSWORD  # set a password for your web interface
-CONTACT_EMAIL = config.CONTACT_EMAIL  # contact email used for getipintel.net requests
+app.config.from_pyfile('config.py')
+mongo = PyMongo(app, config_prefix='MONGO')
 
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
+        db = g._database = sqlite3.connect(app.config['DATABASE'])
     return db
 
 
@@ -33,7 +32,7 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'badmins' and password == UI_PASSWORD
+    return username == 'badmins' and password == app.config['UI_PASSWORD']
 
 
 def authenticate():
@@ -62,12 +61,15 @@ def requires_auth(f):
 @app.route('/')
 @requires_auth
 def playerlist():
-    con = sqlite3.connect(DATABASE)
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player LIMIT 100")
-    dbdata = cur.fetchall()
-    return render_template('playerlist.html', data=dbdata)
+    if app.config['DB_SCHEMA'] == 'mysql':
+        cur = get_db().execute("SELECT name,steamid,ip FROM Player LIMIT 100")
+        dbdata = cur.fetchall()
+        return render_template('playerlist.html', data=dbdata)
+    elif app.config['DB_SCHEMA'] == 'mongo':
+        dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       limit=100).sort('{name:1, steamid:1, ip:1}')
+        # return dumps(dbdata)
+        return render_template('playerlist.html', data=dbdata)
 
 
 # API Endpoints
@@ -75,83 +77,109 @@ def playerlist():
 
 
 @app.route('/getPlayers')
+@requires_auth
 def get_players():
-    con = sqlite3.connect(DATABASE)
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player LIMIT 100")
-    dbdata = [list(entry) for entry in cur.fetchall()]
-    return jsonify(dbdata)
+    if app.config['DB_SCHEMA'] == 'mysql':
+        cur = get_db().execute("SELECT name,steamid,ip FROM Player LIMIT 100")
+        dbdata = [list(entry) for entry in cur.fetchall()]
+        return jsonify(dbdata)
+    elif app.config['DB_SCHEMA'] == 'mongo':
+        dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       limit=100).sort('{name:1, steamid:1, ip:1}')
+        return dumps(dbdata)
 
 
 @app.route('/getIpIntel/<string:ip_addr>')
+@requires_auth
 def get_ip_intel(ip_addr):
     rv = requests.get("http://check.getipintel.net/check.php"
                       "?ip={}"
-                      "&contact={}".format(ip_addr, CONTACT_EMAIL))
+                      "&contact={}".format(ip_addr, app.config['CONTACT_EMAIL']))
     score = rv.json()
     return jsonify(score)
 
 
 @app.route('/getPlayersByName/<string:query_filter>')
+@requires_auth
 def get_players_by_name(query_filter):
-    con = sqlite3.connect(DATABASE)
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player WHERE name LIKE '%" + query_filter + "%' LIMIT 100")
-    dbdata = [list(entry) for entry in cur.fetchall()]
-    return jsonify(dbdata)
+    if app.config['DB_SCHEMA'] == 'mysql':
+        cur = get_db().execute("SELECT name,steamid,ip FROM Player WHERE name LIKE '%" + query_filter + "%' LIMIT 100")
+        dbdata = [list(entry) for entry in cur.fetchall()]
+        return jsonify(dbdata)
+    elif app.config['DB_SCHEMA'] == 'mongo':
+        dbdata = mongo.db.players.find({"name": {"$regex": "{}".format(query_filter)}},
+                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       limit=100).sort('{name:1, steamid:1, ip:1}')
+        return dumps(dbdata)
 
 
 @app.route('/getPlayersByIP/<string:query_filter>')
+@requires_auth
 def get_players_by_ip(query_filter):
-    con = sqlite3.connect(DATABASE)
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player WHERE ip LIKE '%" + query_filter + "%' LIMIT 100")
-    dbdata = [list(entry) for entry in cur.fetchall()]
-    return jsonify(dbdata)
+    if app.config['DB_SCHEMA'] == 'mysql':
+        cur = get_db().execute("SELECT name,steamid,ip FROM Player WHERE ip LIKE '%" + query_filter + "%' LIMIT 100")
+        dbdata = [list(entry) for entry in cur.fetchall()]
+        return jsonify(dbdata)
+    elif app.config['DB_SCHEMA'] == 'mongo':
+        dbdata = mongo.db.players.find({"ip": {"$regex": "{}".format(query_filter)}},
+                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       limit=100).sort('{name:1, steamid:1, ip:1}')
+        return dumps(dbdata)
 
 
-@app.route('/getPlayersBySteamID/<string:query_filter>')
+@app.route('/getPlayersBySteamID/<int:query_filter>')
+@requires_auth
 def get_players_by_steamid(query_filter):
-    con = sqlite3.connect(DATABASE)
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-    cur.execute("SELECT name,steamid,ip FROM Player WHERE steamid LIKE '%" + query_filter + "%' LIMIT 100")
-    dbdata = [list(entry) for entry in cur.fetchall()]
-    return jsonify(dbdata)
+    if app.config['DB_SCHEMA'] == 'mysql':
+        cur = get_db().execute(
+            "SELECT name,steamid,ip FROM Player WHERE steamid LIKE '%" + query_filter + "%' LIMIT 100")
+        dbdata = [list(entry) for entry in cur.fetchall()]
+        return jsonify(dbdata)
+    elif app.config['DB_SCHEMA'] == 'mongo':
+        dbdata = mongo.db.players.find({"steamid": {"$regex": "{}".format(query_filter)}},
+                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       limit=100).sort('{name:1, steamid:1, ip:1}')
+        return dumps(dbdata)
 
 
 @app.route('/getFriends/<int:steam_id>')
+@requires_auth
 def get_friends(steam_id):
-    # Send a request to Steam asking for this person's friends
+    bad_friends = []
+
     rv = requests.get("http://api.steampowered.com/ISteamUser/GetFriendList/v0001/"
                       "?key={}"
                       "&steamid={}"
-                      "&relationship=friend".format(API_KEY, steam_id))
+                      "&relationship=friend".format(app.config['API_KEY'], steam_id))
     friends = rv.json()
 
-    # From our banlist, let's check and see if any of his/her
-    # friends are on it
-    con = sqlite3.connect(DATABASE)
-    con.row_factory = sqlite3.Row
-    cur = con.cursor()
-
-    bad_friends = []
     try:
         for friend in friends['friendslist']['friends']:
-            cur.execute("SELECT banid,steamid FROM Player WHERE steamid == {} LIMIT 100".format(friend['steamid']))
-            rv = cur.fetchone()
-            if rv:
+            if app.config['DB_SCHEMA'] == 'mysql':
+                cur = get_db().execute(
+                    "SELECT banid,steamid FROM Player WHERE steamid == {} LIMIT 100".format(friend['steamid']))
+                rv = cur.fetchone()
+
+            elif app.config['DB_SCHEMA'] == 'mongo':
+                rv = mongo.db.players.find_one({"steamid": "{}".format(friend['steamid'])},
+                                               projection={"banid": 1, "steamid": 1, "_id": 0})
+            if rv is not None:
                 bad_friends.append(rv)
+
         if len(bad_friends) > 0:
-            return jsonify(dict(bad_friends))
+            if app.config['DB_SCHEMA'] == 'mysql':
+                return jsonify(dict(bad_friends))
+
+            elif app.config['DB_SCHEMA'] == 'mongo':
+                print dumps(bad_friends)
+                return dumps(bad_friends)
+
         else:
             return jsonify({"message": "nothing"})
-    except KeyError:
+
+    except KeyError as err:
         return jsonify({"message": "private"})
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(host="0.0.0.0", debug=True)

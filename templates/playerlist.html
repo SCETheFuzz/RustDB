@@ -1,45 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rust Admin Extension</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-</head>
-<body>
-<style>
-    .loader {
-        position: fixed;
-        left: 0px;
-        top: 0px;
-        width: 100%;
-        height: 100%;
-        z-index: 9999;
-        background: url({{ url_for('static', filename='img/loading-2.gif') }}) 50% 50% no-repeat rgb(255, 255, 255);
-    }
-</style>
-<div class="loader"></div>
-
-
-<nav class="navbar navbar-toggleable-md navbar-light bg-faded">
-    <a class="navbar-brand" href="#">Server Name</a>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="#">PlayerDB<span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#">Friend Lookup</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#">VPN Checker</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-<br>
+{% extends 'base.html' %}
+{% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-2">
@@ -91,22 +51,22 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for name, steamid, ip in data %}
-                        <tr id="{{ steamid }}">
+                    {% for player in data %}
+                        <tr id="{{ player.steamid }}">
                             <td>
-                                {{ name }}
+                                {{ player.name }}
                             </td>
                             <td>
-                                <a href="https://steamcommunity.com/profiles/{{ steamid }}"
-                                   target="_blank">{{ steamid }}</a>
+                                <a href="https://steamcommunity.com/profiles/{{ player.steamid }}"
+                                   target="_blank">{{ player.steamid }}</a>
                                 &nbsp;
-                                <button onclick="copySteamID('{{ steamid }}')" type="button" class="btn btn-info btn-sm"
+                                <button onclick="copySteamID('{{ player.steamid }}')" type="button" class="btn btn-info btn-sm"
                                         aria-label="Left Align">
-                                    cpy
+                                    copy
                                 </button>
                             </td>
                             <td class="ip">
-                                {{ ip }}
+                                {{ player.ip }}
                             </td>
                             <td class="intel">
                                 *
@@ -116,9 +76,9 @@
                             </td>
                             <td>
                                 <button class="btn btn-sm btn-default"
-                                        onclick="getIpIntel('{{ ip }}', '{{ steamid }}', this)">IP Intel
+                                        onclick="getIpIntel('{{ player.ip }}', '{{ player.steamid }}', this)">IP Intel
                                 </button>
-                                <button class="btn btn-sm btn-default" onclick="getFriends('{{ steamid }}', this)">
+                                <button class="btn btn-sm btn-default" onclick="getFriends('{{ player.steamid }}', this)">
                                     Friends
                                 </button>
                             </td>
@@ -130,16 +90,4 @@
         </div>
     </div>
 </div>
-<script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/tether.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-<script type="application/javascript" src="{{ url_for('static', filename='js/app.js') }}"></script>
-<script type="application/javascript" src="{{ url_for('static', filename='js/filters.js') }}"></script>
-<script type="text/javascript">
-    $(window).on('load', function () {
-        setTimeout('', 2000);
-        $('.loader').fadeOut("slow");
-    });
-</script>
-</body>
-</html>
+{% endblock %}
