@@ -1,4 +1,4 @@
-# RA Web Extension
-This simple web application is an extension to the Rust Admin tool.
+# RustDB
+This simple web application performs analytic tasks on Rust Server information collected and stored from webRCON.
 
 TODO: Write an actual fucking README
