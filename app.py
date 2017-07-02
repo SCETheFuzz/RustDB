@@ -67,7 +67,7 @@ def playerlist():
         return render_template('playerlist.html', data=dbdata)
     elif app.config['DB_SCHEMA'] == 'mongo':
         dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0, "comment": 1},
-                                       limit=100).sort('{name:1, steamid:1, ip:1, "comment":1}')
+                                       limit=100).sort('{name:1, steamid:1, ip:1}')
         return render_template('playerlist.html', data=dbdata)
 
 
@@ -93,7 +93,7 @@ def get_players():
         return jsonify(dbdata)
     elif app.config['DB_SCHEMA'] == 'mongo':
         dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0, "comment": 1},
-                                       limit=100).sort('{name:1, steamid:1, ip:1, "comment":1}')
+                                       limit=100).sort('{name:1, steamid:1, ip:1}')
         return dumps(dbdata)
 
 
