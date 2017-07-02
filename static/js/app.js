@@ -201,31 +201,31 @@ function getIpIntel(ip, steam_id, btn) {
 function getFriends(steam_id, btn) {
     steam_id = String(steam_id);
     var element = $("#" + steam_id + " > .friends");
+    var alerts = $("#alerts");
 
     $.getJSON("/getFriends/" + String(steam_id), function (response) {
-        var banned = 0;
-        var clean = 0;
-
         if (response.message === "nothing") {
-            element.html("No friends on US");
+            element.html("All safe!");
         } else if (response.message == "private") {
             element.html("Private profile");
         } else {
-            for (var i = 0; i < response.length; i++) {
-                console.log(response[i]['banid'])
-                if (response[i]['banid'] > 0) {
-                    banned++;
-                } else if (response[i]['banid'] < 0) {
-                    clean++;
-                }
-            }
+            $("#" + steam_id).addClass("table-danger");
+            element.html("banned <span class=\"badge badge-danger\">" + response.length + "</span>");
 
-            if (banned > 0) {
-                $("#" + steam_id).addClass("table-danger");
-                element.html("banned <span class=\"badge badge-danger\">" + banned);
-            } else if (clean > 0) {
-                element.html("All safe!");
+            var alert = "<div class=\"alert alert-danger alert-dismissible fade show\" role=\"alert\">" +
+                "<button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\">" +
+                "<span aria-hidden=\"true\">&times;</span>" +
+                "</button><strong>" + steam_id + "</strong>" +
+                " Has banned friends: <ul>";
+
+            console.log(response);
+            for (var i = 0; i < response.length; i++)
+            {
+                alert += "<li><u>" + response[i]['SteamID'] + "</u>: <i>" + response[i]['Reason'] + "</i></li>";
             }
+            alert += "</ul></div>";
+
+            alerts.append(alert);
         }
     });
     $(btn).addClass('disabled');

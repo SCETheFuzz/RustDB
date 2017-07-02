@@ -167,24 +167,18 @@ def get_friends(steam_id):
                 cur = get_db().execute(
                     "SELECT banid,steamid FROM Player WHERE steamid == {} LIMIT 100".format(friend['steamid']))
                 rv = cur.fetchone()
-
             elif app.config['DB_SCHEMA'] == 'mongo':
-                rv = mongo.db.players.find_one({"steamid": "{}".format(friend['steamid'])},
-                                               projection={"banid": 1, "steamid": 1, "_id": 0})
+                rv = mongo.db.Bans.find_one({"SteamID": "{}".format(friend['steamid'])},
+                                            projection={"SteamID": 1, "_id": 0, "Reason": 1, "Server": 1})
             if rv is not None:
                 bad_friends.append(rv)
-
         if len(bad_friends) > 0:
             if app.config['DB_SCHEMA'] == 'mysql':
                 return jsonify(dict(bad_friends))
-
             elif app.config['DB_SCHEMA'] == 'mongo':
-                print dumps(bad_friends)
                 return dumps(bad_friends)
-
         else:
             return jsonify({"message": "nothing"})
-
     except KeyError as err:
         return jsonify({"message": "private"})
 
