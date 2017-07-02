@@ -55,6 +55,7 @@ function repopulateTable(data) {
     var content = "<thead><tr>" +
         "<th>Name</th>" +
         "<th>SteamID</th>" +
+        "<th>Notes</th>" +
         "<th>IPv4</th>" +
         "<th>Intel</th>" +
         "<th>Friends</th>" +
@@ -62,16 +63,33 @@ function repopulateTable(data) {
         "</tr></thead><tbody>";
 
     for (var result in data) {
-        content += "<tr id=\"" + data[result]['steamid'] + "\"><td>" + data[result]['name'] + "</td><td>" +
-            "<a href=\"https://steamcommunity.com/profiles/" + data[result]['steamid'] + "\" target=\"_blank\">" + data[result]['steamid'] + "</a>" +
-            "&nbsp;<button onclick=\"copySteamID('" + data[result]['steamid'] + "')\" type=\"button\" class=\"btn btn-info btn-sm\" " +
-            "aria-label=\"Left Align\">copy</button></td><td>" + data[result]['ip'] + "</td><td class='intel'>*</td><td class=\"friends\">*</td><td>" +
-            "<button class=\"btn btn-sm btn-default\" onclick=\"getIpIntel('" + data[result]['ip'] + "', '" + data[result]['steamid'] + "', this)\">IP Intel</button> " +
-            "<button class=\"btn btn-sm btn-default\" onclick=\"getFriends('" + data[result]['steamid'] + "', this)\">Friends</button>" +
-            "</td></tr>";
+        content += "<tr id=\"" + data[result]['steamid'] + "\">";
+        content += "<td>" + data[result]['name'] + "</td>";
+
+        content += "<td><a href=\"https://steamcommunity.com/profiles/" + data[result]['steamid'] + "\" target=\"_blank\">" + data[result]['steamid'] + "</a>" +
+            "&nbsp;<button onclick=\"copySteamID('" + data[result]['steamid'] + "')\" type=\"button\" class=\"btn btn-info btn-sm\" aria-label=\"Left Align\">copy</button></td>";
+
+        content += "<td><a href=\"#\" class=\"comment\" data-type=\"text\" data-pk=\"" + data[result]['steamid'] + "\" data-url=\"/setPlayerComment\" data-title=\"Enter new comment\">";
+
+        if (data[result]['comment'] != '') {
+            content += data[result]['comment'];
+        } else {
+            content += "Empty"
+        }
+
+        content += "</a></td>";
+
+        content += "<td>" + data[result]['ip'] + "</td>";
+        content += "<td class='intel'>*</td>";
+        content += "<td class=\"friends\">*</td>";
+
+        content += "<td><button class=\"btn btn-sm btn-default\" onclick=\"getIpIntel('" + data[result]['ip'] + "', '" + data[result]['steamid'] + "', this)\">IP Intel</button> " +
+            "<button class=\"btn btn-sm btn-default\" onclick=\"getFriends('" + data[result]['steamid'] + "', this)\">Friends</button></td></tr>";
     }
     content += "</tbody>";
     table.innerHTML = content;
+    $.fn.editable.defaults.mode = 'inline';
+    $('.comment').editable();
     return false;
 }
 
@@ -193,8 +211,7 @@ function getFriends(steam_id, btn) {
         } else if (response.message == "private") {
             element.html("Private profile");
         } else {
-            for (var i = 0; i < response.length; i++)
-            {
+            for (var i = 0; i < response.length; i++) {
                 console.log(response[i]['banid'])
                 if (response[i]['banid'] > 0) {
                     banned++;

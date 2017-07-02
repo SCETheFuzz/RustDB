@@ -66,14 +66,22 @@ def playerlist():
         dbdata = cur.fetchall()
         return render_template('playerlist.html', data=dbdata)
     elif app.config['DB_SCHEMA'] == 'mongo':
-        dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
-                                       limit=100).sort('{name:1, steamid:1, ip:1}')
-        # return dumps(dbdata)
+        dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0, "comment": 1},
+                                       limit=100).sort('{name:1, steamid:1, ip:1, "comment":1}')
         return render_template('playerlist.html', data=dbdata)
 
 
 # API Endpoints
 # -------------
+
+
+@app.route('/setPlayerComment', methods=['POST'])
+@requires_auth
+def set_player_comment():
+    data = request.form
+    values = dict(data.items())
+    mongo.db.players.update_one({'steamid': values['pk']}, {'$set': {'comment': values['value']}}, upsert=False)
+    return jsonify({"message": "success"})
 
 
 @app.route('/getPlayers')
@@ -84,8 +92,8 @@ def get_players():
         dbdata = [list(entry) for entry in cur.fetchall()]
         return jsonify(dbdata)
     elif app.config['DB_SCHEMA'] == 'mongo':
-        dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
-                                       limit=100).sort('{name:1, steamid:1, ip:1}')
+        dbdata = mongo.db.players.find(projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0, "comment": 1},
+                                       limit=100).sort('{name:1, steamid:1, ip:1, "comment":1}')
         return dumps(dbdata)
 
 
@@ -108,7 +116,7 @@ def get_players_by_name(query_filter):
         return jsonify(dbdata)
     elif app.config['DB_SCHEMA'] == 'mongo':
         dbdata = mongo.db.players.find({"name": {"$regex": "{}".format(query_filter)}},
-                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0, "comment": 1},
                                        limit=100).sort('{name:1, steamid:1, ip:1}')
         return dumps(dbdata)
 
@@ -122,7 +130,7 @@ def get_players_by_ip(query_filter):
         return jsonify(dbdata)
     elif app.config['DB_SCHEMA'] == 'mongo':
         dbdata = mongo.db.players.find({"ip": {"$regex": "{}".format(query_filter)}},
-                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0, "comment": 1},
                                        limit=100).sort('{name:1, steamid:1, ip:1}')
         return dumps(dbdata)
 
@@ -137,7 +145,7 @@ def get_players_by_steamid(query_filter):
         return jsonify(dbdata)
     elif app.config['DB_SCHEMA'] == 'mongo':
         dbdata = mongo.db.players.find({"steamid": {"$regex": "{}".format(query_filter)}},
-                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0},
+                                       projection={"name": 1, "steamid": 1, "ip": 1, "_id": 0, "comment": 1},
                                        limit=100).sort('{name:1, steamid:1, ip:1}')
         return dumps(dbdata)
 

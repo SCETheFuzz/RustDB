@@ -43,7 +43,6 @@
                     <tr>
                         <th>Name</th>
                         <th>SteamID</th>
-                        <th>Notes</th>
                         <th>IPv4</th>
                         <th>IP Intel</th>
                         <th>Friends</th>
@@ -65,9 +64,6 @@
                                         aria-label="Left Align">
                                     copy
                                 </button>
-                            </td>
-                            <td>
-                                <a href="#" class="comment" data-type="text" data-pk="{{ player.steamid }}" data-url="/setPlayerComment" data-title="Enter new comment">{% if player.comment %}{{ player.comment }}{% else %}Empty{% endif %}</a>
                             </td>
                             <td class="ip">
                                 {{ player.ip }}
